@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>上岸莫卷 · 设置</title>
+<style>
+  :root{
+    --p-bg:#f2ede2; --p-surface:#fbf8f1; --p-surface2:#f6f1e6; --p-line:#e0d7c5; --p-line2:#cdc2ab;
+    --p-ink:#211d17; --p-mut:#786d5c; --p-dim:#9a8f7d; --p-accent:#9e3b2c; --p-accent-soft:rgba(158,59,44,.08);
+    --p-select:#2f4c6b; --p-ok:#3e6b52;
+    --serif:"Source Han Serif SC","Noto Serif CJK SC","Songti SC","STSong","SimSun",serif;
+    --sans:"Inter","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    --mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+  }
+  html[data-theme="ink"]{
+    --p-bg:#111418; --p-surface:#181c22; --p-surface2:#1d222a; --p-line:#2d343f; --p-line2:#414a58;
+    --p-ink:#e9e3d6; --p-mut:#9e9587; --p-dim:#7c7466; --p-accent:#c9614c; --p-accent-soft:rgba(201,97,76,.12);
+    --p-select:#93aed6; --p-ok:#6fae8b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;width:324px;max-height:600px;overflow-y:auto;background:var(--p-bg);color:var(--p-ink);font:12.5px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+  .top{display:flex;align-items:center;gap:11px;padding:17px 18px 14px;background:var(--p-surface);border-bottom:1px solid var(--p-line)}
+  .seal{position:relative;width:36px;height:36px;flex:0 0 auto;display:grid;place-items:center;border-radius:9px;color:#fbf8f1;background:var(--p-accent);background-image:linear-gradient(155deg,rgba(255,255,255,.18),rgba(0,0,0,.20));box-shadow:0 3px 9px rgba(120,40,28,.24),inset 0 0 0 1px rgba(255,255,255,.14);font:400 25px/1 "KaiTi","STKaiti","Kaiti SC","楷体",var(--serif);padding-bottom:1px;text-shadow:0 1px 0 rgba(0,0,0,.10)}
+  .seal::after{content:"";position:absolute;inset:4px;border:1px solid rgba(251,248,241,.42);border-radius:5px;pointer-events:none}
+  .top h1{margin:0;font:600 15px/1.3 var(--serif);letter-spacing:.04em}
+  .top p{margin:3px 0 0;color:var(--p-dim);font:10.5px/1.3 var(--sans);letter-spacing:.04em}
+  .top p .author{color:var(--p-mut);font-weight:600}
+  main{padding:15px 18px 14px}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:3px 0 13px;border-bottom:1px solid var(--p-line)}
+  .row-last{padding-top:13px}
+  .row b{display:block;font-weight:600;font-size:13px}
+  .row small{display:block;margin-top:2px;color:var(--p-dim);font-size:10.5px}
+  .switch{position:relative;display:block;width:40px;height:22px;flex:0 0 auto;cursor:pointer}
+  .switch input{position:absolute;opacity:0;width:0;height:0}
+  .switch .track{position:absolute;inset:0;border-radius:999px;background:var(--p-line2);transition:background .18s}
+  .switch .track::before{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--p-surface);box-shadow:0 1px 3px rgba(0,0,0,.18);transition:transform .18s}
+  .switch input:checked + .track{background:var(--p-accent)}
+  .switch input:checked + .track::before{transform:translateX(18px)}
+  .switch input:focus-visible + .track{outline:2px solid var(--p-select);outline-offset:2px}
+  .sec{margin-top:14px}
+  .sec-title{display:flex;align-items:center;gap:8px;margin-bottom:8px;font:600 10px/1 var(--mono);letter-spacing:.18em;color:var(--p-dim)}
+  .sec-title::after{content:"";flex:1;height:1px;background:var(--p-line)}
+  .themes{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .theme-card{position:relative;padding:9px 9px 8px;border:1px solid var(--p-line);border-radius:11px;background:var(--p-surface);color:inherit;text-align:left;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s}
+  .theme-card:hover{border-color:var(--p-line2)}
+  .theme-card.is-on{border-color:var(--p-accent);box-shadow:0 0 0 1px var(--p-accent) inset}
+  .theme-card .preview{display:block;height:52px;border-radius:7px;padding:8px 9px;margin-bottom:8px;overflow:hidden}
+  .theme-card .preview i{display:block;height:5px;border-radius:2px;margin-bottom:5px;opacity:.9}
+  .theme-card .preview i:nth-child(1){width:58%}
+  .theme-card .preview i:nth-child(2){width:92%}
+  .theme-card .preview i:nth-child(3){width:74%}
+  .preview.paper{background:#f2ede2;border:1px solid #e0d7c5}
+  .preview.paper i{background:#cdc2ab}
+  .preview.paper i:nth-child(1){background:#9e3b2c;width:26%}
+  .preview.ink{background:#111418;border:1px solid #2d343f}
+  .preview.ink i{background:#414a58}
+  .preview.ink i:nth-child(1){background:#c9614c;width:26%}
+  .theme-card .name{display:block;font:600 12.5px/1.2 var(--serif)}
+  .theme-card .desc{display:block;margin-top:1px;color:var(--p-dim);font:9.5px/1.2 var(--mono);letter-spacing:.04em}
+  .theme-card .check{position:absolute;top:14px;right:14px;width:15px;height:15px;display:none;place-items:center;border-radius:50%;background:var(--p-accent);color:var(--p-surface);font-size:10px;-webkit-text-stroke:.4px var(--p-accent)}
+  .theme-card.is-on .check{display:grid}
+  .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:2px;background:var(--p-surface2);border:1px solid var(--p-line);border-radius:9px}
+  .seg button{border:0;background:transparent;color:var(--p-mut);padding:6px 0;border-radius:7px;font:600 11.5px/1 var(--sans);cursor:pointer;transition:background .14s,color .14s}
+  .seg button:hover{color:var(--p-ink)}
+  .seg button.is-on{background:var(--p-surface);color:var(--p-accent);box-shadow:0 1px 4px rgba(40,30,15,.10)}
+  .seg.fonts{grid-template-columns:repeat(4,1fr)}
+  .seg.fonts button{font-size:10.5px;letter-spacing:.01em}
+  .font-import{display:flex;gap:7px;margin-top:8px}
+  .font-import input{display:none}
+  .font-import button{height:29px;border:1px solid var(--p-line);border-radius:7px;background:var(--p-surface);color:var(--p-mut);font:600 10.5px/1 var(--sans);cursor:pointer;transition:border-color .14s,color .14s,background .14s}
+  .font-import button:hover{border-color:var(--p-line2);color:var(--p-ink);background:var(--p-surface2)}
+  .font-import .font-action{flex:1}
+  .font-import .font-clear{width:46px;flex:0 0 auto}
+  .font-name{margin:6px 1px 0;color:var(--p-dim);font:10px/1.4 var(--mono);word-break:break-all}
+  .row-top{padding-top:0}
+  .rhythm-row{display:flex;align-items:baseline;justify-content:space-between;margin:1px 1px 5px;color:var(--p-mut);font-size:10.5px}
+  .rhythm-row output{color:var(--p-accent);font:600 11px/1 var(--mono)}
+  .range{width:100%;height:20px;margin:0;accent-color:var(--p-accent);cursor:pointer}
+  .seg.weights{margin-top:7px}
+  .note{margin:14px 0 0;padding:10px 11px;border-left:2px solid var(--p-line2);color:var(--p-mut);font-size:10.5px;line-height:1.65;background:var(--p-surface2);border-radius:0 7px 7px 0}
+  footer{padding:9px 18px 12px;border-top:1px solid var(--p-line);color:var(--p-dim);font:9.5px/1.4 var(--mono);letter-spacing:.06em}
+  @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+  <header class="top">
+    <div class="seal">岸</div>
+    <div>
+      <h1>上岸莫卷</h1>
+      <p>作者 · <span class="author">冀缘巧豫</span> · v2.5.6</p>
+    </div>
+  </header>
+
+  <main>
+    <div class="row row-top">
+      <div>
+        <b>启用插件</b>
+        <small>关闭后立即恢复粉笔界面</small>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="enabled">
+        <span class="track"></span>
+      </label>
+    </div>
+
+    <section class="sec">
+      <div class="sec-title">阅读字体</div>
+      <div class="seg fonts" id="fontSeg">
+        <button type="button" data-font="serif">宋体</button>
+        <button type="button" data-font="sans">黑体</button>
+        <button type="button" data-font="kai">楷体</button>
+        <button type="button" data-font="custom">自定义</button>
+      </div>
+      <div class="font-import">
+        <input type="file" id="fontFile" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2">
+        <button type="button" class="font-action" id="fontPick" title="字体只保存在本地扩展存储，不会上传网络">导入本地字体</button>
+        <button type="button" class="font-clear" id="fontClear">清除</button>
+      </div>
+      <p class="font-name" id="fontName">当前：系统宋体</p>
+    </section>
+
+    <section class="sec">
+      <div class="sec-title">阅读节奏</div>
+      <div class="rhythm-row"><span>行高</span><output id="lhValue">1.95</output></div>
+      <input class="range" type="range" id="lhRange" min="1.7" max="2.2" step="0.05" value="1.95" aria-label="阅读行高">
+      <div class="seg weights" id="weightSeg">
+        <button type="button" data-weight="400">常规</button>
+        <button type="button" data-weight="500">中等</button>
+        <button type="button" data-weight="600">加粗</button>
+      </div>
+    </section>
+
+    <div class="row row-last">
+      <div>
+        <b>专注模式</b>
+        <small>进入浏览器全屏，收起答题卡；Alt + M 随时切换</small>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="focus">
+        <span class="track"></span>
+      </label>
+    </div>
+
+    <section class="sec">
+      <div class="sec-title">主题</div>
+      <div class="themes">
+        <button type="button" class="theme-card" data-theme="paper">
+          <span class="preview paper"><i></i><i></i><i></i></span>
+          <span class="name">纸</span>
+          <span class="desc">WARM · 久读</span>
+          <span class="check">✓</span>
+        </button>
+        <button type="button" class="theme-card" data-theme="ink">
+          <span class="preview ink"><i></i><i></i><i></i></span>
+          <span class="name">墨</span>
+          <span class="desc">DARK · 夜读</span>
+          <span class="check">✓</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-title">正文字号</div>
+      <div class="seg" id="sizeSeg">
+        <button type="button" data-size="s">小</button>
+        <button type="button" data-size="m">标准</button>
+        <button type="button" data-size="l">大</button>
+      </div>
+    </section>
+
+    <p class="note">只改变视觉：不读取、不存储你的答案，也不干预粉笔的判分与交卷。</p>
+  </main>
+
+  <footer>左侧工具胶囊 · Alt + T 换主题 · Alt + M 专注</footer>
+  <script src="popup.js"></script>
+</body>
+</html>

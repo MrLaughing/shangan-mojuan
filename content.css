@@ -1,0 +1,1355 @@
+/* ============================================================
+ * 上岸莫卷 · 粉笔答题界面  v2.5.6
+ * 设计语言：墨卷 —— 纸 / 墨 双主题
+ *
+ * 思路：
+ * 1. 粉笔整站主题由 :root 上的 --color-* 变量驱动，先重写令牌，
+ *    让页头、题卡、答题卡、解析区一起变色，而不是只盖一张卡片。
+ * 2. 再针对真实组件（app-ti / .choice-radio-label / .answer-btn）
+ *    做排版与状态细化。
+ * 3. 不生成水印、不覆盖题干、不添加常驻浮层。
+ * ============================================================ */
+
+/* ---------- 1. 自有令牌 ---------- */
+html.gkf-on {
+  --gk-paper: #f2ede2;
+  --gk-surface: #fbf8f1;
+  --gk-surface-2: #f6f1e6;
+  --gk-surface-3: #efe8d9;
+  --gk-glass: rgba(251, 248, 241, .82);
+  --gk-line: #e0d7c5;
+  --gk-line-2: #cdc2ab;
+  --gk-ink: #211d17;
+  --gk-ink-2: #433c31;
+  --gk-mut: #786d5c;
+  --gk-dim: #9a8f7d;
+  --gk-accent: #9e3b2c;
+  --gk-accent-soft: rgba(158, 59, 44, .08);
+  --gk-submit: #9e3b2c;
+  --gk-submit-hover: #873226;
+  --gk-on-accent: #fffdf7;
+  --gk-select: #2f4c6b;
+  --gk-select-soft: rgba(47, 76, 107, .08);
+  --gk-ok: #3e6b52;
+  --gk-ok-soft: rgba(62, 107, 82, .09);
+  --gk-bad: #a8432f;
+  --gk-bad-soft: rgba(168, 67, 47, .09);
+  --gk-warn: #a8762c;
+  --gk-warn-soft: rgba(168, 118, 44, .10);
+  --gk-serif: "Source Han Serif SC", "Noto Serif CJK SC", "Songti SC", "STSong", "SimSun", serif;
+  --gk-sans: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --gk-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --gk-custom-font: "GK Custom Font";
+  --gk-body-font: var(--gk-serif);
+  --gk-ui-font: var(--gk-sans);
+  --gk-stem: 20px;
+  --gk-stem-lh: 1.95;
+  --gk-reading-weight: 400;
+  --gk-opt: 15.5px;
+  --gk-shadow: 0 10px 30px rgba(56, 42, 20, .08);
+  --modal-stop-bg-image: url("https://nodestatic.fbstatic.cn/weblts_spa_online/ti/media/modal-stop-bg-SPZRK7LP.png");
+  --modal-alert-bg-image: url("https://nodestatic.fbstatic.cn/weblts_spa_online/ti/media/modal-alert-bg-HZRTWXNH.png");
+  --modal-submit-success-bg-image: url("https://nodestatic.fbstatic.cn/weblts_spa_online/ti/media/modal-submit-success-bg-IRN4SBEH.png");
+}
+
+html.gkf-on[data-gkf-theme="ink"] {
+  --gk-paper: #111418;
+  --gk-surface: #181c22;
+  --gk-surface-2: #1d222a;
+  --gk-surface-3: #232933;
+  --gk-glass: rgba(24, 28, 34, .84);
+  --gk-line: #2d343f;
+  --gk-line-2: #414a58;
+  --gk-ink: #e9e3d6;
+  --gk-ink-2: #cfc7b8;
+  --gk-mut: #9e9587;
+  --gk-dim: #7c7466;
+  --gk-accent: #c9614c;
+  --gk-accent-soft: rgba(201, 97, 76, .12);
+  --gk-submit: #b04b3c;
+  --gk-submit-hover: #983f33;
+  --gk-on-accent: #fffaf1;
+  --gk-select: #93aed6;
+  --gk-select-soft: rgba(147, 174, 214, .12);
+  --gk-ok: #6fae8b;
+  --gk-ok-soft: rgba(111, 174, 139, .12);
+  --gk-bad: #d8695a;
+  --gk-bad-soft: rgba(216, 105, 90, .12);
+  --gk-warn: #d8a544;
+  --gk-warn-soft: rgba(216, 165, 68, .12);
+  --gk-shadow: 0 14px 34px rgba(0, 0, 0, .34);
+  --modal-stop-bg-image: url("https://nodestatic.fbstatic.cn/weblts_spa_online/ti/media/modal-stop-bg-dark-UKPPHA6N.png");
+  --modal-alert-bg-image: url("https://nodestatic.fbstatic.cn/weblts_spa_online/ti/media/modal-alert-bg-dark-ZEQLZLBV.png");
+  --modal-submit-success-bg-image: url("https://nodestatic.fbstatic.cn/weblts_spa_online/ti/media/modal-submit-success-bg-dark-5GKTWXSS.png");
+}
+
+html.gkf-on[data-gkf-size="s"] { --gk-stem: 18px; --gk-opt: 14.5px; }
+html.gkf-on[data-gkf-size="l"] { --gk-stem: 22px; --gk-opt: 16.5px; }
+
+/* 阅读字体：预设字体与用户导入字体共用同一组阅读变量 */
+html.gkf-on[data-gkf-font="sans"] {
+  --gk-body-font: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif;
+}
+html.gkf-on[data-gkf-font="kai"] {
+  --gk-body-font: "Kaiti SC", "STKaiti", "KaiTi", "楷体", "LXGW WenKai", serif;
+}
+html.gkf-on[data-gkf-font="custom"] {
+  --gk-body-font: var(--gk-custom-font), var(--gk-serif);
+}
+
+/* ---------- 2. 重写粉笔设计令牌（纸） ---------- */
+html.gkf-on {
+  --color-text-primary: var(--gk-ink);
+  --color-text-secondary: var(--gk-mut);
+  --color-text-choice: var(--gk-mut);
+  --color-text-choice-active: #fffdf7;
+  --color-text-choice-correct: var(--gk-ok);
+  --color-text-choice-wrong: var(--gk-bad);
+  --color-text-blue: var(--gk-select);
+  --color-text-blue-standard: var(--gk-select);
+  --color-text-icon: var(--gk-ink-2);
+  --color-text-icon-hover: var(--gk-accent);
+  --color-text-num-cur: var(--gk-ink);
+  --color-text-num-total: var(--gk-dim);
+  --color-text-label-correct: var(--gk-ok);
+  --color-text-label-wrong: var(--gk-bad);
+  --color-text-option-active: var(--gk-select);
+  --color-text-option-collected: #b48323;
+  --color-text-toast: var(--gk-surface);
+  --color-text-info: var(--gk-select);
+  --color-bg-body: var(--gk-paper);
+  --color-bg-header: var(--gk-surface);
+  --color-bg-section: var(--gk-surface);
+  --color-bg-setting: var(--gk-surface);
+  --color-bg-setting-inner: var(--gk-surface-2);
+  --color-bg-choice: var(--gk-surface-2);
+  --color-bg-choice-sub: var(--gk-surface-3);
+  --color-border-choice: var(--gk-line);
+  --color-border-section: var(--gk-line);
+  --color-border-setting: var(--gk-line);
+  --color-border-textarea: var(--gk-line);
+  --color-border-result-common: var(--gk-line);
+  --color-bg-label-blue: var(--gk-accent-soft);
+  --color-bg-label-correct: var(--gk-ok-soft);
+  --color-bg-label-wrong: var(--gk-bad-soft);
+  --color-bg-blue-light: var(--gk-select-soft);
+  --color-bg-blue-standard: var(--gk-select);
+  --color-bg-blue-hover: #3c5c7d;
+  --color-bg-question-overall: var(--gk-surface-2);
+  --color-bg-question-overall-split: linear-gradient(270deg, var(--gk-surface-3), var(--gk-surface-2));
+  --color-bg-question-correct: linear-gradient(180deg, rgba(62, 107, 82, .12), rgba(62, 107, 82, 0) 70%);
+  --color-bg-question-wrong: linear-gradient(180deg, rgba(168, 67, 47, .12), rgba(168, 67, 47, 0) 70%);
+  --color-bg-result-common: var(--gk-surface);
+  --color-bg-result-common-btn: var(--gk-surface-2);
+  --color-bg-result-common-btn-active: linear-gradient(132deg, #eef2f6, #e4eaf1);
+  --color-text-result-common-btn-active: var(--gk-select);
+  --color-bg-chapter: linear-gradient(180deg, var(--gk-surface-2), var(--gk-surface));
+  --color-bg-tooltip: var(--gk-surface-2);
+  --color-bg-toast: rgba(33, 29, 23, .92);
+  --color-bg-textarea: var(--gk-surface-2);
+  --color-bg-star: #c08a2e;
+  --color-bg-star-empty: var(--gk-line-2);
+  --color-svg-fill-1: #ffffff;
+  --color-svg-fill-2: var(--gk-surface-2);
+  --color-svg-fill-3: var(--gk-ink-2);
+  --color-svg-fill-4: rgba(120, 109, 92, .78);
+  --color-svg-fill-5: var(--gk-line);
+  --color-svg-fill-6: var(--gk-surface);
+  --color-svg-fill-7: var(--gk-mut);
+  --color-svg-fill-8: var(--gk-surface-2);
+  --color-bg-index: var(--gk-select);
+  --color-text-index: var(--gk-paper);
+  --color-text-answer-button: var(--gk-select);
+  --color-text-answer-2: var(--gk-ink-2);
+  --color-scrollbar: var(--gk-line-2);
+  --color-shadow-answer-card: var(--gk-shadow);
+  --color-bg-to-top: var(--gk-surface);
+  --color-bg-to-top-hover: var(--gk-surface-2);
+  --color-border-to-top: var(--gk-line);
+  --color-text-tooltip: var(--gk-mut);
+  --color-bg-highlight: linear-gradient(194deg, var(--gk-select-soft), transparent 95%);
+  --color-bg-green: var(--gk-ok);
+  --color-bg-green-opacity: var(--gk-ok-soft);
+  --color-bg-red: var(--gk-bad);
+  --color-bg-red-opacity: var(--gk-bad-soft);
+  --color-bg-label-green: var(--gk-ok-soft);
+  --color-bg-label-red: var(--gk-bad-soft);
+  --color-bg-blue-opacity: var(--gk-select-soft);
+  --color-bg-draft: rgba(33, 29, 23, .06);
+  --color-bg-draft-tools: #3b444d;
+  --color-bg-expand: var(--gk-surface-2);
+  --color-border-expand: var(--gk-line);
+  --color-text-setting: var(--gk-dim);
+  --color-text-setting-active: var(--gk-ink);
+  --color-text-input-placeholder: var(--gk-dim);
+  --color-text-textarea-placeholder: var(--gk-dim);
+  --color-text-alert: var(--gk-bad);
+  --color-text-cancel: var(--gk-dim);
+  --color-text-draft: rgba(255, 255, 255, .72);
+  --color-text-draft-hover: #ffffff;
+  --color-text-question-overall-correct: var(--gk-ok);
+  --color-text-question-overall-wrong: var(--gk-bad);
+  --color-text-question-overall-correct-rate: var(--gk-select);
+  --color-text-question-overall-error-prone: var(--gk-warn);
+  --color-svg-mark-icon-fill-1: var(--gk-accent);
+  --color-svg-mark-icon-fill-2: var(--gk-surface);
+  --color-svg-collect-icon-fill-1: var(--gk-warn);
+  --color-svg-collect-icon-fill-2: var(--gk-surface);
+  --color-svg-close-1: var(--gk-mut);
+  --color-svg-close-2: var(--gk-line-2);
+  --color-svg-close-3: var(--gk-ink-2);
+  --color-svg-arrow-1: var(--gk-mut);
+  --color-svg-arrow-1-hover: var(--gk-ink);
+  --color-svg-arrow-2: var(--gk-line-2);
+  --color-svg-arrow-3: var(--gk-ink-2);
+  --color-svg-tooltip-1: var(--gk-surface-2);
+  --color-svg-tooltip-2: var(--gk-line);
+  --color-svg-feedback-1: var(--gk-ok);
+  --color-svg-feedback-2: var(--gk-bad);
+  --color-svg-feedback-3: var(--gk-warn);
+}
+
+/* ---------- 3. 重写粉笔设计令牌（墨） ---------- */
+html.gkf-on[data-gkf-theme="ink"] {
+  --color-text-primary: var(--gk-ink);
+  --color-text-secondary: var(--gk-mut);
+  --color-text-choice: var(--gk-mut);
+  --color-text-choice-active: #10151b;
+  --color-text-choice-correct: var(--gk-ok);
+  --color-text-choice-wrong: var(--gk-bad);
+  --color-text-blue: var(--gk-select);
+  --color-text-blue-standard: var(--gk-select);
+  --color-text-icon: var(--gk-mut);
+  --color-text-icon-hover: var(--gk-accent);
+  --color-text-num-cur: var(--gk-ink);
+  --color-text-num-total: var(--gk-dim);
+  --color-text-label-correct: var(--gk-ok);
+  --color-text-label-wrong: var(--gk-bad);
+  --color-text-option-active: var(--gk-select);
+  --color-text-option-collected: #d8a544;
+  --color-text-toast: var(--gk-ink);
+  --color-text-info: var(--gk-select);
+  --color-bg-body: var(--gk-paper);
+  --color-bg-header: var(--gk-surface);
+  --color-bg-section: var(--gk-surface);
+  --color-bg-setting: var(--gk-surface);
+  --color-bg-setting-inner: var(--gk-surface-2);
+  --color-bg-choice: var(--gk-surface-2);
+  --color-bg-choice-sub: var(--gk-surface-3);
+  --color-border-choice: var(--gk-line);
+  --color-border-section: var(--gk-line);
+  --color-border-setting: var(--gk-line);
+  --color-border-textarea: var(--gk-line);
+  --color-border-result-common: var(--gk-line);
+  --color-bg-label-blue: var(--gk-accent-soft);
+  --color-bg-label-correct: var(--gk-ok-soft);
+  --color-bg-label-wrong: var(--gk-bad-soft);
+  --color-bg-blue-light: var(--gk-select-soft);
+  --color-bg-blue-standard: var(--gk-select);
+  --color-bg-blue-hover: #a8c0e4;
+  --color-bg-question-overall: var(--gk-surface-2);
+  --color-bg-question-overall-split: linear-gradient(270deg, var(--gk-surface-3), var(--gk-surface-2));
+  --color-bg-question-correct: linear-gradient(180deg, rgba(111, 174, 139, .14), rgba(111, 174, 139, 0) 70%);
+  --color-bg-question-wrong: linear-gradient(180deg, rgba(216, 105, 90, .14), rgba(216, 105, 90, 0) 70%);
+  --color-bg-result-common: var(--gk-surface);
+  --color-bg-result-common-btn: var(--gk-surface-2);
+  --color-bg-result-common-btn-active: linear-gradient(132deg, #26303c, #1e252e);
+  --color-text-result-common-btn-active: var(--gk-select);
+  --color-bg-chapter: linear-gradient(180deg, var(--gk-surface-2), var(--gk-surface));
+  --color-bg-tooltip: var(--gk-surface-2);
+  --color-bg-toast: rgba(233, 227, 214, .94);
+  --color-bg-textarea: var(--gk-surface-2);
+  --color-bg-draft: rgba(0, 0, 0, .14);
+  --color-bg-draft-tools: #2c333c;
+  --color-bg-star: #d8a544;
+  --color-bg-star-empty: var(--gk-line-2);
+  --color-svg-fill-1: #2a313c;
+  --color-svg-fill-2: rgba(255, 255, 255, .06);
+  --color-svg-fill-3: var(--gk-mut);
+  --color-svg-fill-4: rgba(163, 176, 198, .72);
+  --color-svg-fill-5: var(--gk-line);
+  --color-svg-fill-6: var(--gk-surface-2);
+  --color-svg-fill-7: var(--gk-ink-2);
+  --color-svg-fill-8: transparent;
+}
+
+/* ---------- 4. 页面氛围 ---------- */
+html.gkf-on body {
+  background-color: var(--gk-paper) !important;
+  background-image:
+    radial-gradient(1100px 620px at 8% -8%, rgba(158, 59, 44, .045), transparent 62%),
+    radial-gradient(900px 620px at 100% 0%, rgba(47, 76, 107, .05), transparent 58%) !important;
+  background-attachment: fixed !important;
+  color: var(--gk-ink);
+  font-family: var(--gk-sans);
+  -webkit-font-smoothing: antialiased;
+}
+html.gkf-on[data-gkf-theme="ink"] body {
+  background-image:
+    radial-gradient(1100px 620px at 8% -8%, rgba(201, 97, 76, .07), transparent 62%),
+    radial-gradient(900px 620px at 100% 0%, rgba(147, 174, 214, .06), transparent 58%) !important;
+}
+
+/* 题卡容器：只调圆角与阴影，不叠加第二层背景 */
+html.gkf-on .questions-single-container {
+  border-radius: 16px !important;
+  box-shadow: var(--gk-shadow);
+}
+
+/* 草稿层：半透明底 + 虚线边界，能看清题面，也知道草稿范围 */
+html.gkf-on .draft-container {
+  border: 1px dashed var(--gk-line-2) !important;
+  border-radius: 10px !important;
+  box-sizing: border-box !important;
+}
+
+/* ---------- 5. 题头 ---------- */
+html.gkf-on app-ti .title {
+  min-height: 48px !important;
+  height: auto !important;
+  border-bottom: 1px solid var(--gk-line);
+  margin-bottom: 4px;
+}
+html.gkf-on app-ti .title-index {
+  font-family: var(--gk-mono) !important;
+  font-size: 14px !important;
+  letter-spacing: .06em;
+  color: var(--gk-accent) !important;
+  margin-right: 12px !important;
+  font-weight: 600;
+}
+html.gkf-on app-ti .title-type-name {
+  background: transparent !important;
+  border: 1px solid var(--gk-line-2) !important;
+  color: var(--gk-mut) !important;
+  border-radius: 999px !important;
+  padding: 3px 9px !important;
+  font-size: 11px !important;
+  line-height: 14px !important;
+  letter-spacing: .08em;
+}
+html.gkf-on app-ti .title-right .tool {
+  opacity: .62;
+  transition: opacity .16s ease;
+}
+html.gkf-on app-ti .title-right .tool:hover { opacity: 1; }
+
+/* ---------- 6. 题干 ---------- */
+html.gkf-on .question-choice-container > app-format-html,
+html.gkf-on .question-choice-container app-format-html,
+html.gkf-on app-question-view-only > .content {
+  display: block;
+  font-family: var(--gk-body-font) !important;
+  font-size: var(--gk-stem) !important;
+  line-height: var(--gk-stem-lh) !important;
+  font-weight: var(--gk-reading-weight) !important;
+  color: var(--gk-ink) !important;
+  letter-spacing: .012em;
+}
+html.gkf-on .question-choice-container > app-format-html p,
+html.gkf-on .question-choice-container > app-format-html > .content > p,
+html.gkf-on .question-choice-container app-format-html p,
+html.gkf-on app-question-view-only > .content p {
+  font-size: var(--gk-stem) !important;
+  line-height: var(--gk-stem-lh) !important;
+  font-weight: var(--gk-reading-weight) !important;
+  color: var(--gk-ink) !important;
+  margin: 0 0 .55em !important;
+}
+html.gkf-on .question-choice-container > app-format-html {
+  padding: 2px 2px 8px;
+}
+html.gkf-on .question-choice-container img,
+html.gkf-on app-question-view-only img {
+  border-radius: 8px;
+  max-width: 100%;
+}
+
+/* 资料分析的长材料：和题面同一套纸面阅读节奏 */
+html.gkf-on .materials-container .material-content,
+html.gkf-on .materials-container .material-content p {
+  font-family: var(--gk-body-font) !important;
+  font-size: calc(var(--gk-stem) - 1px) !important;
+  line-height: var(--gk-stem-lh) !important;
+  font-weight: var(--gk-reading-weight) !important;
+  color: var(--gk-ink) !important;
+}
+html.gkf-on .materials-container .label-tab {
+  border-color: var(--gk-line) !important;
+  color: var(--gk-mut) !important;
+  background: var(--gk-surface-2) !important;
+}
+
+/* 交卷后的解答区：解析 / 来源 / 我的作答 / 子题答案，统一跟随阅读字体 */
+html.gkf-on app-result-common .result-common-section > .content,
+html.gkf-on app-result-common .result-common-section > .content app-format-html,
+html.gkf-on app-result-common .result-common-section > .content app-format-html > div,
+html.gkf-on app-result-common .result-answer-content,
+html.gkf-on app-solution-view-only .solution-view-only-container > .content,
+html.gkf-on app-solution-blank .content,
+html.gkf-on app-solution-smart .content,
+html.gkf-on app-solution-special-filling-blank .content {
+  font-family: var(--gk-body-font) !important;
+  font-size: var(--gk-opt) !important;
+  line-height: calc(var(--gk-stem-lh) - .15) !important;
+  font-weight: var(--gk-reading-weight) !important;
+  color: var(--gk-ink) !important;
+  letter-spacing: .01em;
+}
+html.gkf-on app-result-common .result-common-section > .content p,
+html.gkf-on app-result-common .result-common-section > .content li,
+html.gkf-on app-result-common .result-common-section > .content div,
+html.gkf-on app-result-common .result-common-section > .content span,
+html.gkf-on app-result-common .result-answer-content p,
+html.gkf-on app-solution-view-only .solution-view-only-container > .content p {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  color: inherit !important;
+}
+html.gkf-on app-result-common .result-common-section > .content strong,
+html.gkf-on app-result-common .result-common-section > .content b,
+html.gkf-on app-result-common .result-answer-content strong,
+html.gkf-on app-result-common .result-answer-content b {
+  font-weight: 600 !important;
+}
+/* 解析 / 考点 / 来源 的小标题与考点标签：一并跟随阅读字体 */
+html.gkf-on app-result-common app-solution-title .solution-title {
+  font-family: var(--gk-body-font) !important;
+  font-weight: 600 !important;
+  letter-spacing: .02em;
+}
+html.gkf-on app-result-common .solution-keypoint-item,
+html.gkf-on app-result-common .solution-keypoint-toast .keypoint-toast-item-content {
+  font-family: var(--gk-body-font) !important;
+  font-weight: var(--gk-reading-weight) !important;
+}
+
+/* ---------- 7. 选项 ---------- */
+html.gkf-on app-ti .choice-radios,
+html.gkf-on app-ti .choice-checkboxs {
+  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  padding-top: 4px;
+}
+html.gkf-on app-ti .choice-radio,
+html.gkf-on app-ti .choice-checkbox {
+  line-height: normal !important;
+}
+html.gkf-on .choice-radio-label,
+html.gkf-on .choice-checkbox-label {
+  display: flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+  padding: 11px 14px !important;
+  border: 1px solid var(--gk-line) !important;
+  border-radius: 10px !important;
+  background: color-mix(in srgb, var(--gk-surface-2) 84%, var(--gk-surface) 16%) !important;
+  position: relative;
+  transition: background .16s ease, border-color .16s ease, box-shadow .16s ease !important;
+}
+html.gkf-on .choice-radio-label:hover,
+html.gkf-on .choice-checkbox-label:hover {
+  background: color-mix(in srgb, var(--gk-surface-3) 88%, var(--gk-surface) 12%) !important;
+  border-color: var(--gk-line-2) !important;
+}
+
+/* 字母徽章 */
+html.gkf-on .input-radio,
+html.gkf-on .input-checkbox {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 28px !important;
+  height: 28px !important;
+  line-height: 26px !important;
+  border-radius: 7px !important;
+  border: 1px solid var(--gk-line-2) !important;
+  background: transparent !important;
+  color: var(--gk-mut) !important;
+  font-family: var(--gk-mono) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+  margin-right: 13px !important;
+  transition: background .16s ease, color .16s ease, border-color .16s ease !important;
+}
+html.gkf-on .input-radio svg,
+html.gkf-on .input-radio svg *,
+html.gkf-on .input-checkbox svg,
+html.gkf-on .input-checkbox svg * {
+  fill: currentColor !important;
+}
+
+/* 选项文字 */
+html.gkf-on .choice-radio-label .input-text,
+html.gkf-on .choice-checkbox-label .input-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--gk-body-font) !important;
+  font-size: var(--gk-opt) !important;
+  line-height: calc(var(--gk-stem-lh) - .12) !important;
+  font-weight: var(--gk-reading-weight) !important;
+  color: var(--gk-ink) !important;
+}
+html.gkf-on .choice-radio-label .input-text p,
+html.gkf-on .choice-checkbox-label .input-text p {
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+/* 选中：靛青左侧书脊 + 淡底 */
+html.gkf-on .choice-radio-label:has(input:checked),
+html.gkf-on .choice-checkbox-label:has(input:checked) {
+  border-color: var(--gk-select) !important;
+  background: var(--gk-select-soft) !important;
+  box-shadow: inset 3px 0 0 var(--gk-select) !important;
+}
+html.gkf-on .choice-radio-label:has(input:checked) .input-radio:not(.correct):not(.wrong):not(.correctLost),
+html.gkf-on .choice-checkbox-label:has(input:checked) .input-checkbox:not(.correct):not(.wrong):not(.correctLost) {
+  background: var(--gk-select) !important;
+  border-color: var(--gk-select) !important;
+  color: var(--color-text-choice-active) !important;
+}
+html.gkf-on .choice-radio-label:has(input:checked):has(.input-radio.correct),
+html.gkf-on .choice-checkbox-label:has(input:checked):has(.input-checkbox.correct) {
+  box-shadow: inset 3px 0 0 var(--gk-ok) !important;
+}
+html.gkf-on .choice-radio-label:has(input:checked):has(.input-radio.wrong),
+html.gkf-on .choice-checkbox-label:has(input:checked):has(.input-checkbox.wrong) {
+  box-shadow: inset 3px 0 0 var(--gk-bad) !important;
+}
+
+/* 判分：正确 / 错误 / 漏选 */
+html.gkf-on .input-radio.correct,
+html.gkf-on .input-checkbox.correct {
+  background: var(--gk-ok) !important;
+  border-color: var(--gk-ok) !important;
+  color: var(--gk-paper) !important;
+}
+html.gkf-on .input-radio.wrong,
+html.gkf-on .input-checkbox.wrong {
+  background: var(--gk-bad) !important;
+  border-color: var(--gk-bad) !important;
+  color: var(--gk-paper) !important;
+}
+html.gkf-on .input-radio.correctLost,
+html.gkf-on .input-checkbox.correctLost {
+  background: transparent !important;
+  border-color: var(--gk-ok) !important;
+  border-style: dashed !important;
+  color: var(--gk-ok) !important;
+}
+html.gkf-on .choice-radio-label:has(.input-radio.correct),
+html.gkf-on .choice-checkbox-label:has(.input-checkbox.correct) {
+  border-color: var(--gk-ok) !important;
+  background: var(--gk-ok-soft) !important;
+}
+html.gkf-on .choice-radio-label:has(.input-radio.wrong),
+html.gkf-on .choice-checkbox-label:has(.input-checkbox.wrong) {
+  border-color: var(--gk-bad) !important;
+  background: var(--gk-bad-soft) !important;
+}
+html.gkf-on .choice-radio-label:has(.input-radio.correctLost),
+html.gkf-on .choice-checkbox-label:has(.input-checkbox.correctLost) {
+  border-color: var(--gk-ok) !important;
+  border-style: dashed !important;
+  background: transparent !important;
+}
+html.gkf-on .choice-radio-label:has(.input-radio.correct)::after,
+html.gkf-on .choice-radio-label:has(.input-radio.wrong)::after,
+html.gkf-on .choice-radio-label:has(.input-radio.correctLost)::after,
+html.gkf-on .choice-checkbox-label:has(.input-checkbox.correct)::after,
+html.gkf-on .choice-checkbox-label:has(.input-checkbox.wrong)::after,
+html.gkf-on .choice-checkbox-label:has(.input-checkbox.correctLost)::after {
+  margin-left: auto;
+  align-self: center;
+  padding: 2px 8px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 10.5px;
+  letter-spacing: .08em;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+html.gkf-on .choice-radio-label:has(.input-radio.correct)::after,
+html.gkf-on .choice-checkbox-label:has(.input-checkbox.correct)::after {
+  content: "正确答案";
+  color: var(--gk-ok);
+}
+html.gkf-on .choice-radio-label:has(.input-radio.wrong)::after,
+html.gkf-on .choice-checkbox-label:has(.input-checkbox.wrong)::after {
+  content: "错选";
+  color: var(--gk-bad);
+}
+html.gkf-on .choice-radio-label:has(.input-radio.correctLost)::after,
+html.gkf-on .choice-checkbox-label:has(.input-checkbox.correctLost)::after {
+  content: "应选";
+  color: var(--gk-ok);
+  opacity: .75;
+}
+
+/* ---------- 8. 答题卡 ---------- */
+html.gkf-on app-answer-card .answer-card-content {
+  border-color: var(--gk-line) !important;
+  border-radius: 14px 14px 0 0 !important;
+  box-shadow: 0 -8px 28px rgba(40, 30, 15, .10);
+}
+html.gkf-on .answer-btn {
+  border-radius: 8px !important;
+  border: 1px solid var(--gk-line) !important;
+  background: var(--gk-surface-2) !important;
+  color: var(--gk-mut) !important;
+  font-family: var(--gk-mono) !important;
+  font-size: 12px !important;
+  transition: background .14s ease, border-color .14s ease, color .14s ease !important;
+}
+html.gkf-on .answer-btn:hover {
+  border-color: var(--gk-line-2) !important;
+  background: var(--gk-surface-3) !important;
+}
+html.gkf-on .answer-btn.answered {
+  background: var(--gk-select-soft) !important;
+  border-color: var(--gk-select) !important;
+  color: var(--gk-select) !important;
+}
+html.gkf-on .answer-btn.correct {
+  background: var(--gk-ok) !important;
+  border-color: var(--gk-ok) !important;
+  color: var(--gk-paper) !important;
+}
+html.gkf-on .answer-btn.wrong {
+  background: var(--gk-bad) !important;
+  border-color: var(--gk-bad) !important;
+  color: var(--gk-paper) !important;
+}
+html.gkf-on .answer-btn.half,
+html.gkf-on .answer-btn.subject-half {
+  background: var(--gk-warn-soft) !important;
+  border-color: var(--gk-warn) !important;
+  color: var(--gk-warn) !important;
+}
+html.gkf-on app-answer-card .chapter-title {
+  font-family: var(--gk-serif) !important;
+  font-size: 13px !important;
+  color: var(--gk-mut) !important;
+}
+
+/* ---------- 9. 侧边工具轨 ---------- */
+#gkf-dock,
+#gkf-panel {
+  font-family: var(--gk-ui-font);
+  -webkit-font-smoothing: antialiased;
+}
+#gkf-dock {
+  position: fixed;
+  left: 20px;
+  bottom: 24px;
+  top: auto;
+  transform: none;
+  z-index: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 7px 6px;
+  background: var(--gk-glass);
+  border: 1px solid var(--gk-line);
+  border-radius: 999px;
+  box-shadow: 0 10px 28px rgba(40, 30, 15, .12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  opacity: .55;
+  transition: opacity .18s ease;
+}
+#gkf-dock:hover,
+#gkf-dock:focus-within { opacity: 1; }
+#gkf-dock button {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--gk-mut);
+  cursor: pointer;
+  transition: background .14s ease, color .14s ease;
+}
+#gkf-dock button:hover {
+  background: var(--gk-accent-soft);
+  color: var(--gk-accent);
+}
+#gkf-dock button:focus-visible,
+#gkf-panel button:focus-visible {
+  outline: 2px solid var(--gk-select);
+  outline-offset: 2px;
+}
+#gkf-dock button[aria-pressed="true"] { color: var(--gk-accent); }
+#gkf-dock button svg { display: block; }
+#gkf-dock .gkf-a {
+  font: 600 15px/1 var(--gk-serif);
+  letter-spacing: 0;
+}
+
+/* 提示面板 */
+#gkf-panel {
+  position: fixed;
+  left: 72px;
+  bottom: 24px;
+  top: auto;
+  width: 286px;
+  padding: 20px 20px 16px;
+  z-index: 601;
+  background: var(--gk-surface);
+  border: 1px solid var(--gk-line);
+  border-radius: 16px;
+  box-shadow: 0 18px 48px rgba(40, 30, 15, .16);
+  color: var(--gk-ink);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-8px);
+  transition: opacity .18s ease, transform .18s ease;
+}
+#gkf-panel.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+#gkf-panel .gkf-kicker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  font: 600 10.5px/1 var(--gk-mono);
+  letter-spacing: .18em;
+  color: var(--gk-accent);
+}
+#gkf-panel .gkf-kicker button {
+  border: 0;
+  background: transparent;
+  color: var(--gk-dim);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+#gkf-panel .gkf-kicker button:hover { color: var(--gk-accent); }
+#gkf-panel h4 {
+  margin: 0 0 4px;
+  font: 600 19px/1.5 var(--gk-serif);
+  color: var(--gk-ink);
+}
+#gkf-panel .gkf-sub {
+  margin: 0 0 14px;
+  font-size: 11.5px;
+  color: var(--gk-dim);
+  letter-spacing: .02em;
+}
+#gkf-panel .gkf-tip {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 10px;
+  padding: 11px 0;
+  border-top: 1px solid var(--gk-line);
+}
+#gkf-panel .gkf-tip b {
+  font: 600 11px/1.6 var(--gk-mono);
+  color: var(--gk-accent);
+  letter-spacing: .04em;
+}
+#gkf-panel .gkf-tip strong {
+  display: block;
+  font: 600 12.5px/1.5 var(--gk-sans);
+  color: var(--gk-ink);
+}
+#gkf-panel .gkf-tip span {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  line-height: 1.65;
+  color: var(--gk-mut);
+}
+#gkf-panel .gkf-foot {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--gk-line);
+  font: 10.5px/1.5 var(--gk-mono);
+  letter-spacing: .04em;
+  color: var(--gk-dim);
+}
+
+/* ---------- 10. 响应式 / 可访问性 ---------- */
+@media (max-width: 1180px) {
+  #gkf-dock,
+  #gkf-panel { display: none !important; }
+}
+@media (max-width: 760px) {
+  #gkf-dock { display: none; }
+  #gkf-panel { display: none; }
+  html.gkf-on .question-choice-container > app-format-html p { font-size: 18px !important; }
+  html.gkf-on .choice-radio-label::after,
+  html.gkf-on .choice-checkbox-label::after { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #gkf-dock, #gkf-panel, #gkf-panel button,
+  html.gkf-on .choice-radio-label, html.gkf-on .choice-checkbox-label,
+  html.gkf-on .input-radio, html.gkf-on .input-checkbox { transition: none !important; }
+}
+
+/* ============================================================
+ * 11. v2.1 版式：把答题页收成一张可读的「卷子」
+ *
+ * 真实粉笔结构里，答题卡是底部抽屉（app-answer-card），
+ * 不是右侧栏。所以这里不硬改 DOM，只调整阅读版心、顶栏、
+ * 抽屉密度和工具入口的位置。
+ * ============================================================ */
+html.gkf-on {
+  --gk-read: 980px;
+  --gk-wide: 1240px;
+  --gk-header: 52px;
+  --gk-card-sheen: rgba(255, 255, 255, .26);
+}
+html.gkf-on[data-gkf-theme="ink"] {
+  --gk-card-sheen: rgba(255, 255, 255, .025);
+}
+
+/* 顶栏：降低存在感，给题面让出高度 */
+html.gkf-on app-nav-header .header-container {
+  border-bottom: 1px solid var(--gk-line);
+  box-shadow: 0 1px 0 rgba(56, 42, 20, .03);
+}
+html.gkf-on app-nav-header .header-content {
+  height: var(--gk-header) !important;
+  margin: 0 24px !important;
+}
+html.gkf-on app-nav-header .header-title {
+  font-size: 13.5px !important;
+  letter-spacing: .015em;
+  color: var(--gk-mut) !important;
+}
+html.gkf-on app-nav-header .submit-btn {
+  padding: 6px 10px;
+  border: 1px solid var(--gk-submit) !important;
+  border-radius: 8px;
+  background: var(--gk-submit) !important;
+  color: var(--gk-on-accent) !important;
+  font-weight: 600 !important;
+  letter-spacing: .03em;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .14);
+}
+html.gkf-on app-nav-header .submit-btn *,
+html.gkf-on app-nav-header .submit-btn span,
+html.gkf-on app-nav-header .submit-btn div {
+  color: var(--gk-on-accent) !important;
+  -webkit-text-fill-color: var(--gk-on-accent) !important;
+}
+html.gkf-on app-nav-header .submit-btn:hover {
+  border-color: var(--gk-submit-hover) !important;
+  background: var(--gk-submit-hover) !important;
+}
+html.gkf-on app-nav-header .submit-btn svg,
+html.gkf-on app-nav-header .submit-btn svg * {
+  fill: var(--gk-on-accent) !important;
+}
+
+/* 阅读版心：外层留给资料分析的双栏，内层题卡限宽 */
+html.gkf-on app-tis {
+  display: block !important;
+  max-width: var(--gk-wide) !important;
+  margin: 18px auto 0 !important;
+  padding: 0 38px;
+  box-sizing: border-box;
+}
+html.gkf-on .exercise-main,
+html.gkf-on .memorize-main {
+  padding-top: var(--gk-header) !important;
+}
+html.gkf-on .exercise-main.answer-card-open,
+html.gkf-on .memorize-main.answer-card-open {
+  padding-bottom: 300px !important;
+}
+html.gkf-on .questions-single-container {
+  width: 100% !important;
+  max-width: var(--gk-read) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding: 10px 0 18px !important;
+  border: 1px solid var(--gk-line);
+  background:
+    linear-gradient(180deg, var(--gk-card-sheen), transparent 140px),
+    var(--gk-surface) !important;
+}
+html.gkf-on .chapter-container {
+  max-width: var(--gk-read);
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+html.gkf-on .chapter-container + .questions-single-container {
+  margin-top: 4px !important;
+}
+html.gkf-on .ti-container {
+  padding: 0 34px !important;
+}
+html.gkf-on .questions-anchors {
+  padding: 16px 34px 0 !important;
+}
+
+/* 题头：更薄、更像卷面页眉 */
+html.gkf-on app-ti .title {
+  min-height: 44px !important;
+  height: auto !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+}
+html.gkf-on app-ti .title-right .tool {
+  margin-left: 10px !important;
+}
+
+/* 选项行：留白更松，边界更轻 */
+html.gkf-on app-ti .choice-radios,
+html.gkf-on app-ti .choice-checkboxs {
+  gap: 7px;
+}
+html.gkf-on .choice-radio-label,
+html.gkf-on .choice-checkbox-label {
+  padding: 12px 16px !important;
+  border-radius: 9px !important;
+}
+html.gkf-on .choice-radio-label .input-text,
+html.gkf-on .choice-checkbox-label .input-text {
+  line-height: 1.74 !important;
+}
+
+/* 底部答题卡：保留抽屉，但收窄、收薄、加圆角 */
+html.gkf-on app-answer-card .answer-card-container {
+  max-width: 1000px !important;
+  transition: transform .22s cubic-bezier(.2, .7, .2, 1), opacity .18s ease !important;
+}
+html.gkf-on app-answer-card .answer-card-content {
+  border-color: var(--gk-line) !important;
+  border-radius: 16px 16px 0 0 !important;
+  background: var(--gk-surface) !important;
+  box-shadow: 0 -10px 36px rgba(40, 30, 15, .14) !important;
+}
+html.gkf-on app-answer-card .answer-card-tag {
+  top: -44px !important;
+  left: auto !important;
+  right: 12px !important;
+  width: 132px !important;
+  height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 0 12px !important;
+  border: 1px solid var(--gk-line) !important;
+  border-bottom: 0 !important;
+  border-radius: 11px 11px 0 0 !important;
+  background: var(--gk-surface) !important;
+  box-shadow: 0 -8px 20px rgba(40, 30, 15, .10);
+}
+html.gkf-on app-answer-card .answer-card-tag-icon,
+html.gkf-on app-answer-card .answer-card-tag .tag-arrow {
+  display: none !important;
+}
+html.gkf-on app-answer-card .answer-card-tag::after {
+  content: "" !important;
+  position: static !important;
+  display: block !important;
+  box-sizing: content-box !important;
+  width: 7px !important;
+  height: 7px !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  margin: 0 2px 0 auto !important;
+  padding: 0 !important;
+  background: none !important;
+  border: 0 !important;
+  border-right: 1.6px solid var(--gk-mut) !important;
+  border-bottom: 1.6px solid var(--gk-mut) !important;
+  z-index: 4 !important;
+  transform: rotate(225deg) !important;
+  transition: transform .18s ease !important;
+}
+html.gkf-on app-answer-card .answer-card-tag:has(.tag-arrow.active)::after {
+  transform: rotate(45deg) !important;
+}
+html.gkf-on app-answer-card.gkf-card-open .answer-card-tag::after {
+  transform: rotate(45deg) !important;
+}
+html.gkf-on app-answer-card .answer-card-body {
+  max-height: 210px !important;
+  padding: 10px 22px 16px !important;
+}
+html.gkf-on app-answer-card .answer-card-body .chapter-title {
+  margin: 8px 0 10px !important;
+  font-size: 12px !important;
+}
+html.gkf-on app-answer-card .answer-card-body .ques-group {
+  margin-bottom: 10px !important;
+}
+html.gkf-on app-answer-card .answer-card-body app-answer-button {
+  margin-right: 14px !important;
+}
+html.gkf-on app-answer-card .tag-name {
+  position: static !important;
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 6px !important;
+  font-size: 14px !important;
+  white-space: nowrap !important;
+}
+html.gkf-on app-answer-card .tag-sub {
+  margin-left: 0 !important;
+  font-size: 10px !important;
+}
+html.gkf-on app-answer-card .tag-sub-cur {
+  font-size: 12px !important;
+}
+html.gkf-on .answer-btn {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 7px !important;
+  font-size: 12px !important;
+}
+
+/* 资料分析：材料与题目并排，材料侧可独立滚动 */
+/* 资料分析：沿用粉笔原生的可拖拽左右栏，只校正默认比例与高度 */
+html.gkf-on app-resizable .resizable-container {
+  height: calc(100vh - 104px) !important;
+}
+/* 原生只给右侧 flex:1，左栏仍是自己的 70vh；这里把左栏也拉到整屏 */
+html.gkf-on app-resizable .resizable-container > .left,
+html.gkf-on app-resizable .resizable-container > .left .left-section,
+html.gkf-on app-resizable .left-section > *,
+html.gkf-on app-resizable .materials-container {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+html.gkf-on app-resizable app-materials {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+}
+html.gkf-on app-resizable:not(.gkf-split-custom) .resizable-container > .left {
+  flex: 0 0 50% !important;
+  width: 50% !important;
+}
+html.gkf-on .gkf-split-parent > .chapter-container {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* 答题卡：展开 / 折叠都以视口右下角为锚点，避免点击时横向跳到屏幕中央 */
+html.gkf-on app-answer-card .answer-card-container {
+  left: auto !important;
+  right: 14px !important;
+  width: min(560px, calc(100vw - 28px)) !important;
+  max-width: none !important;
+  transform: none !important;
+}
+html.gkf-on app-answer-card.gkf-card-collapsed .answer-card-container {
+  width: auto !important;
+}
+html.gkf-on app-answer-card.gkf-card-collapsed .answer-card-content {
+  width: 180px !important;
+  min-height: 44px !important;
+  margin-left: auto !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+html.gkf-on app-answer-card.gkf-card-collapsed .answer-card-body {
+  display: none !important;
+}
+html.gkf-on app-answer-card.gkf-card-collapsed .answer-card-tag {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: 0 !important;
+  width: 180px !important;
+  height: 44px !important;
+  margin-left: auto !important;
+  padding: 0 14px !important;
+  border: 1px solid var(--gk-line) !important;
+  border-bottom: 0 !important;
+  border-radius: 12px 12px 0 0 !important;
+  background: var(--gk-surface) !important;
+  box-shadow: 0 -8px 20px rgba(40, 30, 15, .10) !important;
+}
+html.gkf-on:has(app-answer-card.gkf-card-collapsed) .exercise-main,
+html.gkf-on:has(app-answer-card.gkf-card-collapsed) .memorize-main {
+  padding-bottom: 72px !important;
+}
+html.gkf-on:has(app-answer-card:not(.gkf-card-collapsed)) .exercise-main,
+html.gkf-on:has(app-answer-card:not(.gkf-card-collapsed)) .memorize-main {
+  padding-bottom: 300px !important;
+}
+
+/* 工具轨：左下角小胶囊，放在版心之外，不挡正文 */
+#gkf-dock {
+  left: 20px !important;
+  top: auto !important;
+  bottom: 56px !important;
+  transform: none !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  padding: 7px 6px !important;
+  border-radius: 999px !important;
+  opacity: .72 !important;
+  transition: opacity .18s ease, box-shadow .18s ease, bottom .18s ease !important;
+}
+#gkf-dock:hover,
+#gkf-dock:focus-within {
+  opacity: 1 !important;
+  box-shadow: 0 14px 34px rgba(40, 30, 15, .18);
+}
+#gkf-dock button {
+  width: 30px !important;
+  height: 30px !important;
+}
+#gkf-dock .gkf-expand { display: none; }
+#gkf-dock.is-collapsed {
+  bottom: 24px !important;
+  gap: 0 !important;
+  padding: 4px !important;
+  border-radius: 50% !important;
+}
+#gkf-dock.is-collapsed > button { display: none !important; }
+#gkf-dock.is-collapsed > .gkf-expand {
+  display: grid !important;
+  width: 34px !important;
+  height: 34px !important;
+  color: var(--gk-accent);
+}
+#gkf-dock .gkf-collapse {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px !important;
+  height: 26px !important;
+  border: 1px solid var(--gk-line) !important;
+  background: var(--gk-glass) !important;
+  color: var(--gk-mut) !important;
+  box-shadow: 0 5px 14px rgba(40, 30, 15, .12);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+#gkf-dock .gkf-collapse:hover {
+  border-color: var(--gk-line-2) !important;
+  background: var(--gk-surface-2) !important;
+  color: var(--gk-accent) !important;
+}
+#gkf-panel {
+  left: 74px !important;
+  top: auto !important;
+  bottom: 24px !important;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  transform: translateX(-6px) !important;
+}
+#gkf-panel.is-open {
+  transform: translateX(0) !important;
+}
+html.gkf-on:has(.gkf-split-parent) #gkf-dock {
+  left: 20px !important;
+}
+html.gkf-on:has(.gkf-split-parent) #gkf-panel {
+  left: 74px !important;
+}
+
+/* 专注模式：收起答题卡，阅读区再放宽一档 */
+html.gkf-on[data-gkf-focus="on"] app-answer-card {
+  display: none !important;
+}
+html.gkf-on[data-gkf-focus="on"] .exercise-main,
+html.gkf-on[data-gkf-focus="on"] .memorize-main {
+  padding-bottom: 64px !important;
+}
+html.gkf-on[data-gkf-focus="on"] .questions-single-container {
+  max-width: 880px !important;
+}
+html.gkf-on[data-gkf-focus="on"] .ti-container {
+  padding: 0 36px !important;
+}
+html.gkf-on[data-gkf-focus="on"] .questions-anchors {
+  padding-left: 36px !important;
+  padding-right: 36px !important;
+}
+
+/* 窄屏：先收边距，再让判分标签换行 */
+@media (max-width: 980px) {
+  html.gkf-on app-tis {
+    padding: 0 20px;
+  }
+  html.gkf-on .ti-container {
+    padding: 0 24px !important;
+  }
+  html.gkf-on .questions-anchors {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+  html.gkf-on app-answer-card .answer-card-container {
+    max-width: 100% !important;
+  }
+  #gkf-dock {
+    left: 12px !important;
+  }
+  #gkf-panel {
+    left: 68px !important;
+  }
+  html.gkf-on app-resizable .resizable-container {
+    flex-direction: column !important;
+    height: auto !important;
+  }
+  html.gkf-on app-resizable .resizable-container > .left {
+    flex: 0 0 auto !important;
+    width: 100% !important;
+  }
+  html.gkf-on app-resizable .resizable-container > .left .left-section {
+    margin-right: 0 !important;
+  }
+  html.gkf-on app-resizable .resizable-container > .right {
+    margin-left: 0 !important;
+    margin-top: 8px !important;
+  }
+  html.gkf-on app-resizable .nz-resizable-handle {
+    display: none !important;
+  }
+  html.gkf-on app-answer-card .answer-card-tag {
+    left: auto !important;
+    right: 8px !important;
+    width: 124px !important;
+  }
+}
+
+@media (max-width: 760px) {
+  html.gkf-on app-nav-header .header-content {
+    margin: 0 14px !important;
+  }
+  html.gkf-on app-nav-header .header-title {
+    max-width: calc(50% - 108px) !important;
+  }
+  html.gkf-on app-tis {
+    padding: 0 10px;
+  }
+  html.gkf-on .questions-single-container {
+    border-radius: 12px !important;
+  }
+  html.gkf-on .ti-container {
+    padding: 0 18px !important;
+  }
+  html.gkf-on .questions-anchors {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+  }
+  html.gkf-on .choice-radio-label,
+  html.gkf-on .choice-checkbox-label {
+    align-items: flex-start !important;
+    flex-wrap: wrap !important;
+  }
+  html.gkf-on .choice-radio-label .input-text,
+  html.gkf-on .choice-checkbox-label .input-text {
+    flex: 1 1 calc(100% - 46px);
+  }
+  html.gkf-on .choice-radio-label::after,
+  html.gkf-on .choice-checkbox-label::after {
+    display: inline-flex !important;
+    margin-left: 41px !important;
+    margin-top: 5px !important;
+  }
+  html.gkf-on app-answer-card .answer-card-body {
+    max-height: 180px !important;
+  }
+  html.gkf-on app-answer-card .answer-card-tag {
+    right: 6px !important;
+    width: 118px !important;
+  }
+}
+
+/* ============================================================
+ * 12. 粉笔通用弹窗：暂停 / 提示
+ * 暂停弹窗的插画自带一张白底卡片，标题会压在卡片下沿；
+ * 墨色主题直接换用粉笔的深色插画，并重排标题与插画的间距。
+ * ============================================================ */
+html.gkf-on app-modal-common .modal-overlay {
+  background: rgba(30, 24, 16, .46) !important;
+}
+html.gkf-on[data-gkf-theme="ink"] app-modal-common .modal-overlay {
+  background: rgba(4, 7, 11, .72) !important;
+  backdrop-filter: blur(3px) saturate(.86);
+  -webkit-backdrop-filter: blur(3px) saturate(.86);
+}
+html.gkf-on app-modal-common .modal-body {
+  position: relative;
+  isolation: isolate;
+  padding: 28px 28px 26px;
+  border: 1px solid var(--gk-line);
+  border-radius: 18px;
+  background: var(--gk-surface) !important;
+  box-shadow:
+    0 24px 70px rgba(40, 30, 15, .24),
+    inset 0 1px 0 var(--gk-card-sheen);
+  color: var(--gk-ink);
+}
+html.gkf-on[data-gkf-theme="ink"] app-modal-common .modal-body {
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, .55),
+    inset 0 1px 0 var(--gk-card-sheen);
+}
+html.gkf-on app-modal-common .modal-body.bg-image {
+  padding-top: 114px;
+}
+html.gkf-on app-modal-common .modal-body.bg-image::before {
+  left: 0;
+  width: 100%;
+  height: 142px;
+  top: -38px;
+  background-size: contain;
+  -webkit-mask-image: linear-gradient(180deg, #000 88%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 88%, transparent 100%);
+}
+html.gkf-on app-modal-common .modal-body .modal-title {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 18px !important;
+  font-family: var(--gk-serif) !important;
+  font-size: 15px !important;
+  line-height: 1.6 !important;
+  letter-spacing: .06em !important;
+  color: var(--gk-ink) !important;
+}
+html.gkf-on app-modal-common .modal-body.modal-stop-bg-image .modal-title::before {
+  content: "SHANG AN MO JUAN / 暂歇";
+  display: block;
+  margin-bottom: 7px;
+  font: 600 9px/1 var(--gk-mono);
+  letter-spacing: .18em;
+  color: var(--gk-accent);
+}
+html.gkf-on app-modal-common .modal-body .modal-action {
+  position: relative;
+  z-index: 2;
+}
+html.gkf-on app-modal-common .modal-body .modal-action-btn {
+  font-family: var(--gk-sans) !important;
+  font-weight: 600 !important;
+  letter-spacing: .04em !important;
+  box-shadow: 0 8px 18px rgba(40, 30, 15, .12) !important;
+}
+html.gkf-on app-modal-common .modal-body .modal-action-btn.btn-submit {
+  background: var(--gk-select) !important;
+  color: var(--gk-on-accent) !important;
+}
+html.gkf-on[data-gkf-theme="ink"] app-modal-common .modal-body .modal-action-btn.btn-submit {
+  color: #10151b !important;
+}
+html.gkf-on app-modal-common .modal-body .modal-action-btn.btn-cancel {
+  background: var(--gk-surface-2) !important;
+  color: var(--gk-mut) !important;
+}
