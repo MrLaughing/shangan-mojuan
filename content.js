@@ -33,6 +33,8 @@
   var lastUrl = location.href;
   var scanTimer = 0;
   var dockCollapsed = false;
+  var focusHint = null;
+  var focusHintTimer = 0;
 
   /* ---------- 配置 ---------- */
   function normalize(value) {
@@ -272,6 +274,10 @@
       '<button type="button" data-act="tips" title="考前提示" aria-label="考前提示" aria-expanded="false">' + ICON_BOOK + '</button>' +
       '<button type="button" class="gkf-collapse" data-act="collapse" title="收起工具" aria-label="收起工具">' + ICON_MINUS + '</button>';
 
+    focusHint = document.createElement('div');
+    focusHint.id = 'gkf-focus-hint';
+    focusHint.textContent = '专注模式已开启 · 按 F11 返回';
+
     dock.addEventListener('click', function (e) {
       var btn = e.target.closest('button[data-act]');
       if (!btn) return;
@@ -295,6 +301,7 @@
         updateDock();
         save();
         syncFocusFullscreen();
+        showFocusHint(cfg.focus);
       } else if (act === 'tips') {
         togglePanel();
       } else if (act === 'collapse') {
@@ -315,7 +322,7 @@
       '<div class="gkf-tip"><b>01</b><div><strong>先看问法</strong><span>先圈出「不属于」「错误的是」，再读选项，别被题面牵着走。</span></div></div>' +
       '<div class="gkf-tip"><b>02</b><div><strong>卡住就跳</strong><span>90 秒没有思路就标记跳过，做完回头再看，反而更通透。</span></div></div>' +
       '<div class="gkf-tip"><b>03</b><div><strong>分段核对</strong><span>每 10 题核对一次答题卡，别把检查留到最后五分钟。</span></div></div>' +
-      '<div class="gkf-foot">Alt + T 切换主题 · Alt + M 专注 · Esc 收起</div>';
+      '<div class="gkf-foot">Alt + T 切换主题 · Alt + M 专注 · Esc 收起面板 · F11 退出全屏</div>';
 
     panel.addEventListener('click', function (e) {
       if (e.target.closest('button[data-act="close"]')) togglePanel(false);
@@ -323,6 +330,7 @@
 
     (document.body || root).appendChild(dock);
     (document.body || root).appendChild(panel);
+    (document.body || root).appendChild(focusHint);
     setDockCollapsed(!!cfg.focus);
     updateDock();
   }
@@ -333,6 +341,19 @@
     dock.classList.toggle('is-collapsed', dockCollapsed);
     dock.setAttribute('data-collapsed', dockCollapsed ? 'true' : 'false');
     if (dockCollapsed) togglePanel(false);
+  }
+
+  function showFocusHint(on) {
+    clearTimeout(focusHintTimer);
+    if (!focusHint) return;
+    if (!on) {
+      focusHint.classList.remove('is-visible');
+      return;
+    }
+    focusHint.classList.add('is-visible');
+    focusHintTimer = setTimeout(function () {
+      if (focusHint) focusHint.classList.remove('is-visible');
+    }, 3200);
   }
 
   function updateDock() {
@@ -357,7 +378,7 @@
       var focusOn = cfg.focus ? 'true' : 'false';
       if (focusBtn.getAttribute('aria-pressed') !== focusOn) {
         focusBtn.setAttribute('aria-pressed', focusOn);
-        focusBtn.title = cfg.focus ? '退出专注模式' : '专注模式：全屏、隐藏答题卡';
+        focusBtn.title = cfg.focus ? '退出专注模式（或按 F11 退出全屏）' : '专注模式：全屏、隐藏答题卡';
       }
     }
     if (tipsBtn) {
@@ -426,6 +447,7 @@
       updateDock();
       save();
       syncFocusFullscreen();
+      showFocusHint(cfg.focus);
       return;
     }
     if (e.altKey && (e.key === 't' || e.key === 'T')) {

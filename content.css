@@ -1145,6 +1145,32 @@ html.gkf-on:has(app-answer-card:not(.gkf-card-collapsed)) .memorize-main {
   background: var(--gk-surface-2) !important;
   color: var(--gk-accent) !important;
 }
+#gkf-focus-hint {
+  position: fixed !important;
+  z-index: 99999 !important;
+  left: 50% !important;
+  bottom: 38px !important;
+  transform: translate(-50%, 8px) !important;
+  padding: 8px 14px !important;
+  border: 1px solid var(--gk-line) !important;
+  border-radius: 999px !important;
+  background: var(--gk-glass) !important;
+  color: var(--gk-ink) !important;
+  box-shadow: 0 10px 26px rgba(40, 30, 15, .16) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  font: 600 12px/1 var(--gk-sans, system-ui, sans-serif) !important;
+  letter-spacing: .02em !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: opacity .2s ease, transform .2s ease, visibility .2s !important;
+}
+#gkf-focus-hint.is-visible {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translate(-50%, 0) !important;
+}
 #gkf-panel {
   left: 74px !important;
   top: auto !important;
