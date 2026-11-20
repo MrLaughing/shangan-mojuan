@@ -87,8 +87,8 @@
   .app-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
   .app-link{display:flex;align-items:center;gap:8px;min-width:0;padding:7px 8px;border:1px solid var(--p-line);border-radius:9px;background:var(--p-surface);color:inherit;text-decoration:none;transition:border-color .15s,background .15s,transform .15s}
   .app-link:hover{border-color:var(--p-accent);background:var(--p-surface2);transform:translateY(-1px)}
-  .app-icon{width:26px;height:26px;flex:0 0 auto;display:grid;place-items:center;border-radius:8px;background:var(--p-accent-soft);color:var(--p-accent);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
-  .app-icon svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .app-icon{width:26px;height:26px;flex:0 0 auto;display:grid;place-items:center;border-radius:8px;background:var(--p-surface2);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}
+  .app-icon img{width:100%;height:100%;object-fit:contain;display:block}
   .app-meta{min-width:0;flex:1}
   .app-meta b{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font:600 11px/1.2 var(--sans)}
   .app-meta small{display:block;margin-top:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--p-dim);font:9px/1.2 var(--mono)}
@@ -103,7 +103,7 @@
     <div class="seal">岸</div>
     <div>
       <h1>上岸莫卷</h1>
-      <p>作者 · <span class="author">冀缘巧豫</span> · v2.6.0</p>
+      <p>作者 · <span class="author">冀缘巧豫</span> · v2.6.1</p>
     </div>
   </header>
 
@@ -193,23 +193,23 @@
       </div>
       <div class="app-grid">
         <a class="app-link" href="https://moji.jiyuanqiaoyu.com/" target="_blank" rel="noopener noreferrer" title="墨集：本地优先的阅读知识库">
-          <span class="app-icon"><svg viewBox="0 0 24 24"><path d="M5 4.8h11.2a2.8 2.8 0 0 1 2.8 2.8v11.6H8a3 3 0 0 1-3-3V4.8Z"/><path d="M5 17.2A2.8 2.8 0 0 1 7.8 14.4H19"/><path d="M9 8.5h6M9 11.5h4"/></svg></span>
+          <span class="app-icon"><img src="icons/apps/moji.png" alt=""></span>
           <span class="app-meta"><b>墨集</b><small>阅读知识库</small></span>
         </a>
         <a class="app-link" href="https://github.com/MrLaughing/AsTimeGoesBy-releases" target="_blank" rel="noopener noreferrer" title="流光阅历：记录读过的书与走过的日子">
-          <span class="app-icon"><svg viewBox="0 0 24 24"><path d="M12 7.2a4.8 4.8 0 1 0 0 9.6 4.8 4.8 0 0 0 0-9.6Z"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6 7.2 7.2M16.8 16.8l1.6 1.6M18.4 5.6 16.8 7.2M7.2 16.8l-1.6 1.6"/></svg></span>
+          <span class="app-icon"><img src="icons/apps/as-time-goes-by.png" alt=""></span>
           <span class="app-meta"><b>流光阅历</b><small>Android · 阅读记录</small></span>
         </a>
         <a class="app-link" href="https://www.jiyuanqiaoyu.com/moyuan" target="_blank" rel="noopener noreferrer" title="墨园：把微信读书的阅读时光长成植物花园">
-          <span class="app-icon"><svg viewBox="0 0 24 24"><path d="M12 20v-7"/><path d="M12 14c-3.6 0-6-2.2-6-5.6 3.4 0 6 2 6 5.6Z"/><path d="M12 12c0-3.3 2.3-5.8 5.8-6 0 3.4-2.2 6-5.8 6Z"/><path d="M7.5 20h9"/></svg></span>
+          <span class="app-icon"><img src="icons/apps/moyuan.svg" alt=""></span>
           <span class="app-meta"><b>墨园</b><small>阅读花园</small></span>
         </a>
         <a class="app-link" href="https://github.com/MrLaughing/wps-benefits-auto-assistant" target="_blank" rel="noopener noreferrer" title="WPS 福利自动助手：Edge / Chromium 扩展">
-          <span class="app-icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m8.5 12.2 2.4 2.4 4.8-5"/></svg></span>
+          <span class="app-icon"><img src="icons/apps/wps-benefits.png" alt=""></span>
           <span class="app-meta"><b>WPS 福利助手</b><small>Edge / Chromium</small></span>
         </a>
         <a class="app-link" href="https://www.jiyuanqiaoyu.com/games/dashuipiao" target="_blank" rel="noopener noreferrer" title="打水漂大师：微信小游戏">
-          <span class="app-icon"><svg viewBox="0 0 24 24"><path d="M4 16.5c3.4 0 5.2-1.3 7.2-3.4 2-2.2 4.2-3.3 8.8-2.9"/><path d="M10.8 13.4c1.5 2.4 4 3.8 7 4"/><path d="M16.8 7.8h3.2V11"/></svg></span>
+          <span class="app-icon"><img src="icons/apps/dashuipiao.png" alt=""></span>
           <span class="app-meta"><b>打水漂大师</b><small>微信小游戏</small></span>
         </a>
         <a class="app-link app-more" href="https://www.jiyuanqiaoyu.com/apps" target="_blank" rel="noopener noreferrer" title="查看作者的全部应用">查看全部应用</a>
