@@ -79,6 +79,21 @@
   .range{width:100%;height:20px;margin:0;accent-color:var(--p-accent);cursor:pointer}
   .seg.weights{margin-top:7px}
   .note{margin:14px 0 0;padding:10px 11px;border-left:2px solid var(--p-line2);color:var(--p-mut);font-size:10.5px;line-height:1.65;background:var(--p-surface2);border-radius:0 7px 7px 0}
+  .apps{margin-top:14px;padding:11px;border:1px solid var(--p-line);border-radius:12px;background:linear-gradient(145deg,var(--p-surface),var(--p-surface2));box-shadow:0 4px 14px rgba(45,32,18,.045)}
+  .apps-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .apps-badge{width:22px;height:22px;display:grid;place-items:center;border-radius:7px;color:var(--p-surface);background:var(--p-accent);font:600 12px/1 var(--serif)}
+  .apps-head b{display:block;font:600 12px/1.25 var(--serif)}
+  .apps-head small{display:block;margin-top:2px;color:var(--p-dim);font:9.5px/1.2 var(--mono);letter-spacing:.04em}
+  .app-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .app-link{display:flex;align-items:center;gap:8px;min-width:0;padding:7px 8px;border:1px solid var(--p-line);border-radius:9px;background:var(--p-surface);color:inherit;text-decoration:none;transition:border-color .15s,background .15s,transform .15s}
+  .app-link:hover{border-color:var(--p-accent);background:var(--p-surface2);transform:translateY(-1px)}
+  .app-icon{width:26px;height:26px;flex:0 0 auto;display:grid;place-items:center;border-radius:8px;background:var(--p-accent-soft);color:var(--p-accent);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+  .app-icon svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .app-meta{min-width:0;flex:1}
+  .app-meta b{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font:600 11px/1.2 var(--sans)}
+  .app-meta small{display:block;margin-top:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--p-dim);font:9px/1.2 var(--mono)}
+  .app-more{grid-column:1/-1;justify-content:center;gap:6px;margin-top:1px;padding:8px;background:transparent;border-style:dashed;color:var(--p-mut)}
+  .app-more::after{content:"↗";font-size:11px;color:var(--p-accent)}
   footer{padding:9px 18px 12px;border-top:1px solid var(--p-line);color:var(--p-dim);font:9.5px/1.4 var(--mono);letter-spacing:.06em}
   @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
@@ -88,7 +103,7 @@
     <div class="seal">岸</div>
     <div>
       <h1>上岸莫卷</h1>
-      <p>作者 · <span class="author">冀缘巧豫</span> · v2.5.6</p>
+      <p>作者 · <span class="author">冀缘巧豫</span> · v2.6.0</p>
     </div>
   </header>
 
@@ -170,6 +185,36 @@
     </section>
 
     <p class="note">只改变视觉：不读取、不存储你的答案，也不干预粉笔的判分与交卷。</p>
+
+    <section class="apps" aria-label="作者的其他应用">
+      <div class="apps-head">
+        <span class="apps-badge">缘</span>
+        <div><b>作者的其他应用</b><small>JIYUANQIAOYU · APPS</small></div>
+      </div>
+      <div class="app-grid">
+        <a class="app-link" href="https://moji.jiyuanqiaoyu.com/" target="_blank" rel="noopener noreferrer" title="墨集：本地优先的阅读知识库">
+          <span class="app-icon"><svg viewBox="0 0 24 24"><path d="M5 4.8h11.2a2.8 2.8 0 0 1 2.8 2.8v11.6H8a3 3 0 0 1-3-3V4.8Z"/><path d="M5 17.2A2.8 2.8 0 0 1 7.8 14.4H19"/><path d="M9 8.5h6M9 11.5h4"/></svg></span>
+          <span class="app-meta"><b>墨集</b><small>阅读知识库</small></span>
+        </a>
+        <a class="app-link" href="https://github.com/MrLaughing/AsTimeGoesBy-releases" target="_blank" rel="noopener noreferrer" title="流光阅历：记录读过的书与走过的日子">
+          <span class="app-icon"><svg viewBox="0 0 24 24"><path d="M12 7.2a4.8 4.8 0 1 0 0 9.6 4.8 4.8 0 0 0 0-9.6Z"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6 7.2 7.2M16.8 16.8l1.6 1.6M18.4 5.6 16.8 7.2M7.2 16.8l-1.6 1.6"/></svg></span>
+          <span class="app-meta"><b>流光阅历</b><small>Android · 阅读记录</small></span>
+        </a>
+        <a class="app-link" href="https://www.jiyuanqiaoyu.com/moyuan" target="_blank" rel="noopener noreferrer" title="墨园：把微信读书的阅读时光长成植物花园">
+          <span class="app-icon"><svg viewBox="0 0 24 24"><path d="M12 20v-7"/><path d="M12 14c-3.6 0-6-2.2-6-5.6 3.4 0 6 2 6 5.6Z"/><path d="M12 12c0-3.3 2.3-5.8 5.8-6 0 3.4-2.2 6-5.8 6Z"/><path d="M7.5 20h9"/></svg></span>
+          <span class="app-meta"><b>墨园</b><small>阅读花园</small></span>
+        </a>
+        <a class="app-link" href="https://github.com/MrLaughing/wps-benefits-auto-assistant" target="_blank" rel="noopener noreferrer" title="WPS 福利自动助手：Edge / Chromium 扩展">
+          <span class="app-icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="m8.5 12.2 2.4 2.4 4.8-5"/></svg></span>
+          <span class="app-meta"><b>WPS 福利助手</b><small>Edge / Chromium</small></span>
+        </a>
+        <a class="app-link" href="https://www.jiyuanqiaoyu.com/games/dashuipiao" target="_blank" rel="noopener noreferrer" title="打水漂大师：微信小游戏">
+          <span class="app-icon"><svg viewBox="0 0 24 24"><path d="M4 16.5c3.4 0 5.2-1.3 7.2-3.4 2-2.2 4.2-3.3 8.8-2.9"/><path d="M10.8 13.4c1.5 2.4 4 3.8 7 4"/><path d="M16.8 7.8h3.2V11"/></svg></span>
+          <span class="app-meta"><b>打水漂大师</b><small>微信小游戏</small></span>
+        </a>
+        <a class="app-link app-more" href="https://www.jiyuanqiaoyu.com/apps" target="_blank" rel="noopener noreferrer" title="查看作者的全部应用">查看全部应用</a>
+      </div>
+    </section>
   </main>
 
   <footer>左侧工具胶囊 · Alt + T 换主题 · Alt + M 专注</footer>
