@@ -226,7 +226,7 @@ document.querySelectorAll('#weightSeg button').forEach((b) => {
 
 /* ---------- 检查更新 ---------- */
 const UPDATE_KEY = 'gkf.update';
-const UPDATE_URL = 'https://raw.githubusercontent.com/MrLaughing/shangan-mojuan/main/update.json';
+const UPDATE_URL = 'https://github.com/MrLaughing/shangan-mojuan/raw/refs/heads/main/update.json';
 const CHECK_INTERVAL = 24 * 60 * 60 * 1000;
 
 function compareVersion(a, b) {

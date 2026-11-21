@@ -6,7 +6,7 @@
   "permissions": ["storage", "unlimitedStorage", "activeTab", "tabs"],
   "host_permissions": [
     "*://*.fenbi.com/*",
-    "https://raw.githubusercontent.com/MrLaughing/shangan-mojuan/main/update.json"
+    "https://github.com/MrLaughing/shangan-mojuan/raw/refs/heads/main/update.json"
   ],
   "icons": {
     "16": "icons/icon16.png",
