@@ -2,6 +2,7 @@
   "version": "2.7.0",
   "published_at": "2026-11-21",
   "zip_url": "https://github.com/MrLaughing/shangan-mojuan/raw/refs/heads/main/shangan-mojuan-v2.7.0.zip",
+  "mirror_zip_url": "https://cdn.jsdelivr.net/gh/MrLaughing/shangan-mojuan@main/shangan-mojuan-v2.7.0.zip",
   "release_url": "https://github.com/MrLaughing/shangan-mojuan",
   "changelog": [
     "新增扩展内检查更新：打开弹窗自动检查，也可手动检查",

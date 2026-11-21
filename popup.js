@@ -226,7 +226,10 @@ document.querySelectorAll('#weightSeg button').forEach((b) => {
 
 /* ---------- 检查更新 ---------- */
 const UPDATE_KEY = 'gkf.update';
-const UPDATE_URL = 'https://github.com/MrLaughing/shangan-mojuan/raw/refs/heads/main/update.json';
+const UPDATE_URLS = [
+  'https://cdn.jsdelivr.net/gh/MrLaughing/shangan-mojuan@main/update.json',
+  'https://github.com/MrLaughing/shangan-mojuan/raw/refs/heads/main/update.json'
+];
 const CHECK_INTERVAL = 24 * 60 * 60 * 1000;
 
 function compareVersion(a, b) {
@@ -239,6 +242,17 @@ function compareVersion(a, b) {
   return 0;
 }
 
+function buildDownloadSources(info) {
+  const version = info && info.version ? String(info.version) : '';
+  const name = version ? 'shangan-mojuan-v' + version + '.zip' : 'shangan-mojuan.zip';
+  const sources = [];
+  if (info && info.mirror_zip_url) sources.push({ name: '镜像', url: info.mirror_zip_url });
+  sources.push({ name: 'jsDelivr', url: 'https://cdn.jsdelivr.net/gh/MrLaughing/shangan-mojuan@main/' + name });
+  sources.push({ name: 'GH 代理', url: 'https://gh-proxy.com/https://github.com/MrLaughing/shangan-mojuan/raw/refs/heads/main/' + name });
+  sources.push({ name: 'GitHub', url: info && info.zip_url ? info.zip_url : 'https://github.com/MrLaughing/shangan-mojuan/raw/refs/heads/main/' + name });
+  return sources.filter((s, i, arr) => s.url && arr.findIndex(x => x.url === s.url) === i);
+}
+
 function showUpdate(info) {
   const card = $('#updateCard');
   if (!card || !info || compareVersion(info.version, chrome.runtime.getManifest().version) <= 0) {
@@ -246,7 +260,7 @@ function showUpdate(info) {
     return;
   }
   $('#updateVersion').textContent = 'v' + info.version;
-  $('#updateHint').textContent = '下载后解压，再到扩展管理页点「重新加载」。';
+  $('#updateHint').textContent = '下载后解压，再到扩展管理页点「重新加载」。默认使用国内镜像；若打不开可切换下载源。';
   const list = $('#updateChangelog');
   list.innerHTML = '';
   (info.changelog || []).slice(0, 5).forEach((item) => {
@@ -254,9 +268,16 @@ function showUpdate(info) {
     li.textContent = item;
     list.appendChild(li);
   });
+  const sources = buildDownloadSources(info);
   const download = $('#updateDownload');
-  download.href = info.zip_url || info.release_url || 'https://github.com/MrLaughing/shangan-mojuan';
-  download.textContent = info.zip_url ? '下载新版 ZIP' : '查看发布页';
+  const switcher = $('#updateSource');
+  download.href = sources[0] ? sources[0].url : (info.release_url || 'https://github.com/MrLaughing/shangan-mojuan');
+  download.textContent = '下载新版 ZIP';
+  if (switcher) {
+    switcher.textContent = '切换下载源：' + (sources[0] ? sources[0].name : '发布页');
+    switcher.dataset.sources = JSON.stringify(sources);
+    switcher.dataset.index = '0';
+  }
   card.hidden = false;
 }
 
@@ -272,6 +293,20 @@ function writeUpdateState(state) {
   try { chrome.storage.local.set({ [UPDATE_KEY]: state }); } catch (e) {}
 }
 
+function fetchUpdateInfo() {
+  let i = 0;
+  const next = () => {
+    if (i >= UPDATE_URLS.length) return Promise.reject(new Error('all update sources failed'));
+    return fetch(UPDATE_URLS[i++], { cache: 'no-store' })
+      .then((r) => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .catch(next);
+  };
+  return next();
+}
+
 function checkUpdate(force) {
   const button = $('#updateCheck');
   if (button) button.disabled = true;
@@ -282,11 +317,7 @@ function checkUpdate(force) {
       if (button) button.disabled = false;
       return;
     }
-    fetch(UPDATE_URL, { cache: 'no-store' })
-      .then((r) => {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-      })
+    fetchUpdateInfo()
       .then((info) => {
         const latest = { checkedAt: now, info: info };
         writeUpdateState(latest);
@@ -317,6 +348,19 @@ $('#updateIgnore').addEventListener('click', () => {
   if (card) card.hidden = true;
   flash('已忽略此版本');
 });
+$('#updateSource').addEventListener('click', () => {
+  const button = $('#updateSource');
+  const download = $('#updateDownload');
+  let sources = [];
+  try { sources = JSON.parse(button.dataset.sources || '[]'); } catch (e) {}
+  if (!sources.length) return;
+  const index = (Number(button.dataset.index || '0') + 1) % sources.length;
+  button.dataset.index = String(index);
+  button.textContent = '切换下载源：' + sources[index].name;
+  download.href = sources[index].url;
+  flash('下载源：' + sources[index].name);
+});
+
 checkUpdate(false);
 
 load();

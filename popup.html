@@ -95,6 +95,7 @@
   .update-actions button:hover,.update-actions a:hover{border-color:var(--p-line2);color:var(--p-ink);background:var(--p-surface2)}
   .update-actions .update-download{flex:1;border-color:var(--p-accent);background:var(--p-accent);color:var(--p-surface)}
   .update-actions .update-download:hover{color:var(--p-surface);filter:brightness(1.05)}
+  .update-actions .update-source{flex:0 0 auto}
   .update-actions .update-note{flex:0 0 auto}
   .apps-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
   .apps-badge{width:22px;height:22px;display:grid;place-items:center;border-radius:7px;overflow:hidden;background:var(--p-surface2)}
@@ -209,7 +210,8 @@
       <p id="updateHint">下载后解压，再到扩展管理页点「重新加载」。</p>
       <ul id="updateChangelog"></ul>
       <div class="update-actions">
-        <a class="update-download" id="updateDownload" href="#" target="_blank" rel="noopener noreferrer">下载新版</a>
+        <a class="update-download" id="updateDownload" href="#" target="_blank" rel="noopener noreferrer">下载新版 ZIP</a>
+        <button type="button" class="update-source" id="updateSource">切换下载源：jsDelivr</button>
         <button type="button" class="update-note" id="updateIgnore">忽略此版</button>
       </div>
     </section>
