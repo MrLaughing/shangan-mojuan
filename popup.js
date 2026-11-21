@@ -69,11 +69,17 @@ function save() {
 }
 
 function flash(text) {
-  const el = $('#status');
-  if (!el) return;
-  el.textContent = text;
+  const button = $('#updateCheck');
+  if (!button) return;
+  const original = button.dataset.label || button.textContent;
+  if (!button.dataset.label) button.dataset.label = original;
+  button.textContent = text;
+  button.disabled = true;
   clearTimeout(flash.timer);
-  flash.timer = setTimeout(() => { el.textContent = ''; }, 1800);
+  flash.timer = setTimeout(() => {
+    button.textContent = original;
+    button.disabled = false;
+  }, 1800);
 }
 
 function load() {
@@ -216,5 +222,101 @@ document.querySelectorAll('#weightSeg button').forEach((b) => {
     flash('字重：' + b.textContent);
   });
 });
+
+
+/* ---------- 检查更新 ---------- */
+const UPDATE_KEY = 'gkf.update';
+const UPDATE_URL = 'https://raw.githubusercontent.com/MrLaughing/shangan-mojuan/main/update.json';
+const CHECK_INTERVAL = 24 * 60 * 60 * 1000;
+
+function compareVersion(a, b) {
+  const pa = String(a || '').split('.').map(n => parseInt(n, 10) || 0);
+  const pb = String(b || '').split('.').map(n => parseInt(n, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const diff = (pa[i] || 0) - (pb[i] || 0);
+    if (diff) return diff;
+  }
+  return 0;
+}
+
+function showUpdate(info) {
+  const card = $('#updateCard');
+  if (!card || !info || compareVersion(info.version, chrome.runtime.getManifest().version) <= 0) {
+    if (card) card.hidden = true;
+    return;
+  }
+  $('#updateVersion').textContent = 'v' + info.version;
+  $('#updateHint').textContent = '下载后解压，再到扩展管理页点「重新加载」。';
+  const list = $('#updateChangelog');
+  list.innerHTML = '';
+  (info.changelog || []).slice(0, 5).forEach((item) => {
+    const li = document.createElement('li');
+    li.textContent = item;
+    list.appendChild(li);
+  });
+  const download = $('#updateDownload');
+  download.href = info.zip_url || info.release_url || 'https://github.com/MrLaughing/shangan-mojuan';
+  download.textContent = info.zip_url ? '下载新版 ZIP' : '查看发布页';
+  card.hidden = false;
+}
+
+function readUpdateState(callback) {
+  try {
+    chrome.storage.local.get([UPDATE_KEY], (o) => callback((o && o[UPDATE_KEY]) || {}));
+  } catch (e) {
+    callback({});
+  }
+}
+
+function writeUpdateState(state) {
+  try { chrome.storage.local.set({ [UPDATE_KEY]: state }); } catch (e) {}
+}
+
+function checkUpdate(force) {
+  const button = $('#updateCheck');
+  if (button) button.disabled = true;
+  readUpdateState((state) => {
+    const now = Date.now();
+    if (!force && state.checkedAt && now - state.checkedAt < CHECK_INTERVAL) {
+      showUpdate(state.info);
+      if (button) button.disabled = false;
+      return;
+    }
+    fetch(UPDATE_URL, { cache: 'no-store' })
+      .then((r) => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then((info) => {
+        const latest = { checkedAt: now, info: info };
+        writeUpdateState(latest);
+        if (state.ignoredVersion && info && info.version === state.ignoredVersion) {
+          if (button) button.disabled = false;
+          return;
+        }
+        showUpdate(info);
+        if (button) button.disabled = false;
+        if (!force && info && compareVersion(info.version, chrome.runtime.getManifest().version) > 0) flash('发现新版');
+      })
+      .catch(() => {
+        showUpdate(state.info);
+        if (button) button.disabled = false;
+        if (force) flash('检查失败，请稍后重试');
+      });
+  });
+}
+
+$('#updateCheck').addEventListener('click', () => checkUpdate(true));
+$('#updateIgnore').addEventListener('click', () => {
+  const card = $('#updateCard');
+  const version = ($('#updateVersion').textContent || '').replace(/^v/, '');
+  readUpdateState((state) => {
+    state.ignoredVersion = version;
+    writeUpdateState(state);
+  });
+  if (card) card.hidden = true;
+  flash('已忽略此版本');
+});
+checkUpdate(false);
 
 load();

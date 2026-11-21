@@ -1,0 +1,11 @@
+{
+  "version": "2.7.0",
+  "published_at": "2026-11-21",
+  "zip_url": "https://raw.githubusercontent.com/MrLaughing/shangan-mojuan/main/shangan-mojuan-v2.7.0.zip",
+  "release_url": "https://github.com/MrLaughing/shangan-mojuan",
+  "changelog": [
+    "新增扩展内检查更新：打开弹窗自动检查，也可手动检查",
+    "发现新版时展示更新卡片，可下载新版或忽略该版本",
+    "检查结果本地缓存 24 小时，减少重复请求"
+  ]
+}

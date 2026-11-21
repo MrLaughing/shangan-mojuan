@@ -1,10 +1,13 @@
 {
   "manifest_version": 3,
   "name": "上岸莫卷",
-  "version": "2.6.3",
+  "version": "2.7.0",
   "description": "把粉笔答题界面变成「上岸莫卷」：纸 / 墨双主题、限宽阅读版心、可换阅读字体与清晰选项状态；只改外观，不干扰答题与判分。",
   "permissions": ["storage", "unlimitedStorage", "activeTab", "tabs"],
-  "host_permissions": ["*://*.fenbi.com/*"],
+  "host_permissions": [
+    "*://*.fenbi.com/*",
+    "https://raw.githubusercontent.com/MrLaughing/shangan-mojuan/main/update.json"
+  ],
   "icons": {
     "16": "icons/icon16.png",
     "32": "icons/icon32.png",

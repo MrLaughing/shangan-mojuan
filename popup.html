@@ -26,6 +26,9 @@
   .top h1{margin:0;font:600 15px/1.3 var(--serif);letter-spacing:.04em}
   .top p{margin:3px 0 0;color:var(--p-dim);font:10.5px/1.3 var(--sans);letter-spacing:.04em}
   .top p .author{color:var(--p-mut);font-weight:600}
+  .update-check{margin-left:auto;flex:0 0 auto;height:25px;padding:0 8px;border:1px solid var(--p-line);border-radius:7px;background:var(--p-surface2);color:var(--p-mut);font:600 10px/1 var(--sans);cursor:pointer;transition:border-color .14s,color .14s}
+  .update-check:hover:not(:disabled){border-color:var(--p-accent);color:var(--p-accent)}
+  .update-check:disabled{opacity:.55;cursor:default}
   main{padding:15px 18px 14px}
   .row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:3px 0 13px;border-bottom:1px solid var(--p-line)}
   .row-last{padding-top:13px}
@@ -80,6 +83,19 @@
   .seg.weights{margin-top:7px}
   .note{margin:14px 0 0;padding:10px 11px;border-left:2px solid var(--p-line2);color:var(--p-mut);font-size:10.5px;line-height:1.65;background:var(--p-surface2);border-radius:0 7px 7px 0}
   .apps{margin-top:14px;padding:11px;border:1px solid var(--p-line);border-radius:12px;background:linear-gradient(145deg,var(--p-surface),var(--p-surface2));box-shadow:0 4px 14px rgba(45,32,18,.045)}
+  .update-card{margin-top:14px;padding:11px;border:1px solid var(--p-line);border-radius:12px;background:var(--p-surface2)}
+  .update-head{display:flex;align-items:center;gap:8px}
+  .update-dot{width:8px;height:8px;border-radius:50%;background:var(--p-accent);box-shadow:0 0 0 4px var(--p-accent-soft)}
+  .update-head b{display:block;font:600 12px/1.25 var(--serif)}
+  .update-head small{display:block;margin-top:2px;color:var(--p-dim);font:9.5px/1.2 var(--mono)}
+  .update-card p{margin:8px 0 9px;color:var(--p-mut);font-size:10.5px;line-height:1.6}
+  .update-card ul{margin:6px 0 9px;padding-left:17px;color:var(--p-mut);font-size:10.5px;line-height:1.55}
+  .update-actions{display:flex;gap:7px}
+  .update-actions button,.update-actions a{height:29px;display:inline-flex;align-items:center;justify-content:center;padding:0 10px;border:1px solid var(--p-line);border-radius:7px;background:var(--p-surface);color:var(--p-mut);font:600 10.5px/1 var(--sans);text-decoration:none;cursor:pointer;transition:border-color .14s,color .14s,background .14s}
+  .update-actions button:hover,.update-actions a:hover{border-color:var(--p-line2);color:var(--p-ink);background:var(--p-surface2)}
+  .update-actions .update-download{flex:1;border-color:var(--p-accent);background:var(--p-accent);color:var(--p-surface)}
+  .update-actions .update-download:hover{color:var(--p-surface);filter:brightness(1.05)}
+  .update-actions .update-note{flex:0 0 auto}
   .apps-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
   .apps-badge{width:22px;height:22px;display:grid;place-items:center;border-radius:7px;overflow:hidden;background:var(--p-surface2)}
   .apps-badge img{width:100%;height:100%;object-fit:contain;display:block}
@@ -104,7 +120,8 @@
     <div class="seal">岸</div>
     <div>
       <h1>上岸莫卷</h1>
-      <p>作者 · <span class="author">冀缘巧豫</span> · v2.6.3</p>
+      <p>作者 · <span class="author">冀缘巧豫</span> · v2.7.0</p>
+      <button type="button" class="update-check" id="updateCheck" title="检查是否有新版本">检查更新</button>
     </div>
   </header>
 
@@ -186,6 +203,16 @@
     </section>
 
     <p class="note">只改变视觉：不读取、不存储你的答案，也不干预粉笔的判分与交卷。</p>
+
+    <section class="update-card" id="updateCard" hidden>
+      <div class="update-head"><span class="update-dot"></span><div><b id="updateTitle">发现新版本</b><small id="updateVersion">v0.0.0</small></div></div>
+      <p id="updateHint">下载后解压，再到扩展管理页点「重新加载」。</p>
+      <ul id="updateChangelog"></ul>
+      <div class="update-actions">
+        <a class="update-download" id="updateDownload" href="#" target="_blank" rel="noopener noreferrer">下载新版</a>
+        <button type="button" class="update-note" id="updateIgnore">忽略此版</button>
+      </div>
+    </section>
 
     <section class="apps" aria-label="作者的其他应用">
       <div class="apps-head">
